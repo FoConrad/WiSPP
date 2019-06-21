@@ -8,12 +8,13 @@ __version__ = "0.0.1"
 import sys
 import ast
 
-from .tokenize import tokenize, untokenize
+from .tokenize import tokenize
+from .syn_tree import token_parse
 
 
 def run(file_name: str) -> None:
     tokker = tokenize(file_name)
-    tree = ast.parse(untokenize(list(tokker)))
+    tree = token_parse(list(tokker))
     eval(compile(tree, '<tree>', mode='exec'))
 
 def usage():

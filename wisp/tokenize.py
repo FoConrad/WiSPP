@@ -5,20 +5,19 @@
 
     TODO: Deal with line continuations...
 """
-import token
-token.SPACE = 59 # Check Lib/token.py for free numbers
-token.tok_name[59] = 'SPACE'
 
-import tokenize as py_tok
-py_tok.EXACT_TOKEN_TYPES[' '] = token.SPACE
+# Use this to add our SPACE token
+from .fix_token import token
 
 from itertools import chain, count
 from typing import List
 
 
+
+# This class is a hack to add space tokens to the tokenized lines
 class Tokenizer(object):
     def __init__(self, file_):
-        self._tokens = py_tok.tokenize(file_)
+        self._tokens = token.tokenize(file_)
         self._cur_line = None
         self._line_toks = []
 
@@ -44,7 +43,6 @@ class Tokenizer(object):
 
         if len(self._line_toks) > 0:
             self._add_spaces(self._line_toks[0].line)
-            self._enforce_precedence()
 
         return next(self)
 
@@ -66,14 +64,10 @@ class Tokenizer(object):
 
             lt = self._line_toks[ind - 1]
             if lt.end[1] < tok.start[1]:
-                newtok = py_tok.TokenInfo(
+                newtok = token.TokenInfo(
                         token.SPACE, ' ', (lt.end[0], lt.end[1]),
                         (tok.start[0], lt.end[1]+1), tok.line)
                 self._line_toks.insert(ind, newtok)
-
-    def _enforce_precedence(self):
-        pass
-
 
 
 class IOFile(object):
@@ -89,5 +83,3 @@ class IOFile(object):
 def tokenize(read_file: str) -> Tokenizer:
     return Tokenizer(IOFile(read_file))
 
-def untokenize(tokens: List[py_tok.TokenInfo]) -> bytes:
-    return py_tok.untokenize(tokens)
